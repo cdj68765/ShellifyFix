@@ -28,6 +28,8 @@ namespace Shellify.Extensions
 {
 	public static class BinaryReaderExtensions
 	{
+		public static int CodePage = 936;
+
 		public static string ReadSTDATA(this BinaryReader reader, Encoding encoding)
 		{
 			int charcount = reader.ReadUInt16();
@@ -38,11 +40,12 @@ namespace Shellify.Extensions
 		public static string ReadASCIIZ(this BinaryReader reader, long baseOffset, long defaultOffset, long? unicodeOffset)
 		{
 			var offset = defaultOffset;
-			var encoding = Encoding.Default;
+			var encoding = Encoding.GetEncoding(CodePage);
 			if (unicodeOffset.HasValue)
 			{
 				offset = unicodeOffset.Value;
 				encoding = Encoding.Unicode;
+				return ReadASCIIZ(reader, encoding, reader.BaseStream.Position - defaultOffset - offset);
 			}
 
 			return ReadASCIIZ(reader, encoding, reader.BaseStream.Position - baseOffset - offset);

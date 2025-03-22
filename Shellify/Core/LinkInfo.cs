@@ -30,6 +30,7 @@ namespace Shellify.Core
 		public string LocalBasePath { get; set; }
 		public CommonNetworkRelativeLink CommonNetworkRelativeLink { get; set; }
 		public string CommonPathSuffix { get; set; }
+		public string LocalBasePathUnicode { get; set; }
 
 		public override string ToString()
 		{

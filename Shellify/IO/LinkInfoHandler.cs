@@ -56,6 +56,7 @@ namespace Shellify.IO
 				case > 0:
 					reader.ReadBytes(delta);
 					break;
+
 				case < 0:
 					throw new ArgumentException();
 			}
@@ -110,8 +111,9 @@ namespace Shellify.IO
 				var cnrlReader = new CommonNetworkRelativeLinkHandler(Item.CommonNetworkRelativeLink);
 				cnrlReader.ReadFrom(reader);
 			}
-
-			Item.CommonPathSuffix = reader.ReadASCIIZ(readerOffset, CommonPathSuffixOffset, CommonPathSuffixOffsetUnicode);
+			Item.CommonPathSuffix = reader.ReadASCIIZ(readerOffset, CommonPathSuffixOffset, null);
+			if (CommonPathSuffixOffsetUnicode.HasValue)
+				Item.LocalBasePathUnicode = reader.ReadASCIIZ(readerOffset, CommonPathSuffixOffset, CommonPathSuffixOffsetUnicode);
 		}
 
 		public void WriteTo(BinaryWriter writer)
@@ -119,12 +121,12 @@ namespace Shellify.IO
 			var padding = new byte[] { };
 
 			LinkInfoHeaderSize = Marshal.SizeOf(LinkInfoSize) +
-			                     Marshal.SizeOf(LinkInfoHeaderSize) +
-			                     Marshal.SizeOf(typeof(int)) +
-			                     Marshal.SizeOf(VolumeIDOffset) +
-			                     Marshal.SizeOf(LocalBasePathOffset) +
-			                     Marshal.SizeOf(CommonNetworkRelativeLinkOffset) +
-			                     Marshal.SizeOf(CommonPathSuffixOffset);
+								 Marshal.SizeOf(LinkInfoHeaderSize) +
+								 Marshal.SizeOf(typeof(int)) +
+								 Marshal.SizeOf(VolumeIDOffset) +
+								 Marshal.SizeOf(LocalBasePathOffset) +
+								 Marshal.SizeOf(CommonNetworkRelativeLinkOffset) +
+								 Marshal.SizeOf(CommonPathSuffixOffset);
 
 			LinkInfoSize = LinkInfoHeaderSize + Encoding.Default.GetASCIIZSize(Item.CommonPathSuffix);
 
@@ -138,7 +140,7 @@ namespace Shellify.IO
 
 			if ((Item.LinkInfoFlags & (LinkInfoFlags.VolumeIDAndLocalBasePath | LinkInfoFlags.CommonNetworkRelativeLinkAndPathSuffix)) == (LinkInfoFlags.VolumeIDAndLocalBasePath | LinkInfoFlags.CommonNetworkRelativeLinkAndPathSuffix))
 			{
-				padding = new byte[] {0};
+				padding = new byte[] { 0 };
 				LinkInfoSize += padding.Length;
 			}
 
@@ -170,9 +172,9 @@ namespace Shellify.IO
 			writer.Write(CommonPathSuffixOffset);
 
 			// TODO: Handle unicode strings and offsets
-			// LocalBasePathOffsetUnicode = 
-			// CommonPathSuffixOffsetUnicode = 
-			// LinkInfoHeaderSize >= &H24 
+			// LocalBasePathOffsetUnicode =
+			// CommonPathSuffixOffsetUnicode =
+			// LinkInfoHeaderSize >= &H24
 
 			if (vidWriter != null)
 			{

@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Shellify.Core;
+using Shellify.Extensions;
 using Shellify.ExtraData;
 using Shellify.IO;
 
@@ -158,15 +159,29 @@ namespace Shellify
 			return builder.ToString();
 		}
 
-		public static ShellLinkFile Load(string filename)
+		public static ShellLinkFile Load(string filename, int CodePage = 936)
 		{
+			BinaryReaderExtensions.CodePage = CodePage;
 			var result = new ShellLinkFile();
-			
 			using var stream = File.OpenRead(filename);
 			using var binaryReader = new BinaryReader(stream);
-			
+
 			var reader = new ShellLinkFileHandler(result);
 			reader.ReadFrom(binaryReader);
+			return result;
+		}
+
+		public static ShellLinkFile Load(byte[] file, int CodePage = 936)
+		{
+			BinaryReaderExtensions.CodePage = CodePage;
+			var result = new ShellLinkFile();
+			using var stream = new MemoryStream(file);
+			using var binaryReader = new BinaryReader(stream);
+
+			var reader = new ShellLinkFileHandler(result);
+			reader.ReadFrom(binaryReader);
+			binaryReader.Dispose();
+			stream.Dispose();
 			return result;
 		}
 
